@@ -1,8 +1,5 @@
 checksum
 ==
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/codingsince1985/checksum)](https://pkg.go.dev/github.com/codingsince1985/checksum)
-[![Go Report Card](https://goreportcard.com/badge/codingsince1985/checksum)](https://goreportcard.com/report/codingsince1985/checksum)
-[test coverage](https://gocover.io/github.com/codingsince1985/checksum)
 
 Compute message digest, like MD5 and SHA256, in golang for potentially large files.
 
@@ -24,6 +21,7 @@ func main() {
 	fmt.Println(sha256)
 }
 ```
+
 License
 ==
 checksum is distributed under the terms of the MIT license. See LICENSE for details.

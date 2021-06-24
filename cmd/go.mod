@@ -1,0 +1,1 @@
+module "github.com/gryffyn/checksum/cmd"
