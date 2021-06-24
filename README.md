@@ -1,6 +1,8 @@
 checksum
 ==
 
+Fork of [checksum](https://github.com/codingsince1985/checksum).
+
 Compute message digest, like MD5 and SHA256, in golang for potentially large files.
 
 Usage
@@ -10,7 +12,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/codingsince1985/checksum"
+	"github.com/gryffyn/checksum"
 )
 
 func main() {
