@@ -39,7 +39,7 @@ func SHA512sumReader(reader io.Reader) (string, error) {
 
 // SHA3sumReader returns SHA-3 checksum of content in reader
 func SHA3sumReader(reader io.Reader) (string, error) {
-	return sumReader(sha3.New256(), reader)
+	return sumReader(sha3.New224(), reader)
 }
 
 // Blake512sumReader returns BLAKE2b-512 checksum of content in reader
@@ -56,13 +56,13 @@ func Blake256sumReader(reader io.Reader) (string, error) {
 
 // Blake3256sumReader returns BLAKE3 checksum of content in reader
 func Blake3256sumReader(reader io.Reader) (string, error) {
-	h := blake3.New(256, nil)
+	h := blake3.New(32, nil)
 	return sumReader(h, reader)
 }
 
 // Blake3512sumReader returns BLAKE3 checksum of content in reader
 func Blake3512sumReader(reader io.Reader) (string, error) {
-	h := blake3.New(512, nil)
+	h := blake3.New(64, nil)
 	return sumReader(h, reader)
 }
 

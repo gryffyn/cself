@@ -64,7 +64,7 @@ func TestBlake3256sumReader(t *testing.T) {
 func TestBlake3512sumReader(t *testing.T) {
 	if sum, err := checksum.Blake3512sumReader(strings.NewReader(
 		"some data")); err != nil || sum != "b224a1da2bf5e72b337dc6dde457a05265a06dec8875be379e2ad2be5edb3bf21b55688951738e3a7155d6398eb56c6bc35d5bca5f139d98eb7409be51d1be32" {
-		t.Error("BLAKE3-256sum(reader) failed", sum, err)
+		t.Error("BLAKE3-512sum(reader) failed", sum, err)
 	}
 }
 

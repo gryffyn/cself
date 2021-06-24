@@ -38,7 +38,7 @@ func SHA512sum(filename string) (string, error) {
 
 // SHA3sum returns SHA-3 checksum of filename
 func SHA3sum(filename string) (string, error) {
-	return sum(sha3.New256(), filename)
+	return sum(sha3.New224(), filename)
 }
 
 // Blake512sum returns BLAKE2b-512 checksum of filename
@@ -55,13 +55,13 @@ func Blake256sum(filename string) (string, error) {
 
 // Blake3256sum returns BLAKE3 checksum of filename
 func Blake3256sum(filename string) (string, error) {
-	h := blake3.New(256, nil)
+	h := blake3.New(32, nil)
 	return sum(h, filename)
 }
 
 // Blake3512sum returns BLAKE3 checksum of filename
 func Blake3512sum(filename string) (string, error) {
-	h := blake3.New(512, nil)
+	h := blake3.New(64, nil)
 	return sum(h, filename)
 }
 
