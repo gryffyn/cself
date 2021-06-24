@@ -1,5 +1,7 @@
 checksum
 ==
+[![PkgGoDev](https://pkg.go.dev/badge/git.neveris.one/gryffyn/checksum)](https://pkg.go.dev/git.neveris.one/gryffyn/checksum)
+[![Build Status](https://ci.neveris.one/api/badges/gryffyn/checksum/status.svg)](https://ci.neveris.one/gryffyn/checksum)
 
 Fork of [checksum](https://github.com/codingsince1985/checksum).
 
