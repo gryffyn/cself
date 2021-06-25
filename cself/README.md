@@ -16,7 +16,7 @@ COMMANDS:
    list-hashes, l  list hashes
 
 GLOBAL OPTIONS:
-   --list-hashes value  list hash algorithms
-   --help, -h           show help (default: false)
+   --hash value  hash algorithm (default: "sha256")
+   --help, -h    show help (default: false)
 
 ```

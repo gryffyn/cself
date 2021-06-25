@@ -76,13 +76,6 @@ func main() {
 		},
 	}
 
-	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:  "list-hashes",
-			Usage: "list hash algorithms",
-		},
-	}
-
 	app.Action = func(c *cli.Context) error {
 		var err error
 		var output string
