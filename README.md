@@ -14,7 +14,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gryffyn/checksum"
+	"git.neveris.one/gryffyn/checksum"
 )
 
 func main() {
