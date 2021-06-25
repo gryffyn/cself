@@ -17,6 +17,11 @@ steps:
     image: golang
     commands:
       - go build
+  - name: build cmd
+    image: golang
+    commands:
+      - cd cself
+      - go build
 
   - name: gitea_release
     image: plugins/gitea-release
@@ -26,7 +31,7 @@ steps:
       api_key:
         from_secret: gitea_token
       base_url: https://git.neveris.one
-      files: port
+      files: cself/cself
       checksum:
         - sha256
     when:
