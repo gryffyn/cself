@@ -26,6 +26,22 @@ func main() {
 }
 ```
 
+Algorithms
+--
+```
+md5
+sha1
+sha256
+sha512
+sha3-224
+xxhash-32
+xxhash-64
+blake2b-256
+blake2b-512
+blake3-256
+blake3-512
+```
+
 License
 ==
 `checksum` is distributed under the terms of the MIT license. See LICENSE for details.
