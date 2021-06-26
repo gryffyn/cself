@@ -1,4 +1,4 @@
-module github.com/gryffyn/checksum/cself
+module git.neveris.one/gryffyn/checksum/cself
 
 go 1.12
 
