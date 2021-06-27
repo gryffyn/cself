@@ -1,4 +1,5 @@
 # cself
+[![Build Status](https://ci.neveris.one/api/badges/gryffyn/checksum/status.svg)](https://ci.neveris.one/gryffyn/checksum)
 
 `cself` is a cli for the `checksum` package.
 
