@@ -1,4 +1,4 @@
-# checksum
+# cself
 [![PkgGoDev](https://pkg.go.dev/badge/git.neveris.one/gryffyn/cself)](https://pkg.go.dev/git.neveris.one/gryffyn/cself)
 [![Build Status](https://ci.neveris.one/api/badges/gryffyn/cself/status.svg)](https://ci.neveris.one/gryffyn/cself)
 

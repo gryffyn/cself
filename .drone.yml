@@ -31,7 +31,7 @@ steps:
       api_key:
         from_secret: gitea_token
       base_url: https://git.neveris.one
-      files: cself/cself
+      files: cself
       checksum:
         - sha256
     when:
