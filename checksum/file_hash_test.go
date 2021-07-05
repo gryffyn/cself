@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"git.neveris.one/gryffyn/checksum"
+	"git.neveris.one/gryffyn/checksum/checksum"
 )
 
 func prepareFile() (string, error) {
