@@ -17,11 +17,6 @@ steps:
     image: golang
     commands:
       - go build
-  - name: build cmd
-    image: golang
-    commands:
-      - cd cself
-      - go build
 
   - name: gitea_release
     image: plugins/gitea-release
