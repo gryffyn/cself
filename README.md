@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	file := "/home/jerry/Downloads/ubuntu-gnome-16.04-desktop-amd64.iso"
+	file := "~/Downloads/ubuntu-gnome-16.04-desktop-amd64.iso"
 	md5, _ := checksum.MD5sum(file)
 	fmt.Println(md5)
 	sha256, _ := checksum.SHA256sum(file)
@@ -28,6 +28,7 @@ func main() {
 
 Algorithms
 --
+### Hash functions
 ```
 md5
 sha1
@@ -40,6 +41,16 @@ blake2b-256
 blake2b-512
 blake3-256
 blake3-512
+```
+
+### KDFs
+```
+argon2
+argon2id
+scrypt (tarsnap format)
+scrypt
+pbkdf2
+bcrypt
 ```
 
 License
