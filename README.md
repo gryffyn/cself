@@ -1,20 +1,40 @@
-checksum
-==
-[![PkgGoDev](https://pkg.go.dev/badge/git.neveris.one/gryffyn/checksum)](https://pkg.go.dev/git.neveris.one/gryffyn/checksum)
-[![Build Status](https://ci.neveris.one/api/badges/gryffyn/checksum/status.svg)](https://ci.neveris.one/gryffyn/checksum)
+# checksum
+[![PkgGoDev](https://pkg.go.dev/badge/git.neveris.one/gryffyn/cself)](https://pkg.go.dev/git.neveris.one/gryffyn/cself)
+[![Build Status](https://ci.neveris.one/api/badges/gryffyn/cself/status.svg)](https://ci.neveris.one/gryffyn/cself)
 
 Fork of [checksum](https://github.com/codingsince1985/checksum).
 
-Compute message digest, like MD5 and SHA256, in golang for potentially large files.
+Computes checksum (such as SHA256) from files or `stdin` in Go. Uses chunking to support large files.
 
-Usage
---
+Computes key from KDFs (such as Argon2id) with either given parameters or sane defaults.
+
+## Usage
+### binary
+
+```
+§ cself -h
+NAME:
+   cself - generate hashes for files, passwords, and stdin
+
+USAGE:
+   cself [COMMAND] [OPTIONS]
+
+COMMANDS:
+   list-alg, l  list algorithms
+   hash, h      hash mode
+   kdf, h       hash mode
+
+GLOBAL OPTIONS:
+   --help, -h  show help (default: false)
+```
+
+### library
 ```go
 package main
 
 import (
 	"fmt"
-	"git.neveris.one/gryffyn/checksum"
+	"git.neveris.one/gryffyn/cself/checksum"
 )
 
 func main() {
@@ -26,8 +46,7 @@ func main() {
 }
 ```
 
-Algorithms
---
+## Algorithms
 ### Hash functions
 ```
 md5
@@ -45,7 +64,7 @@ blake3-512
 
 ### KDFs
 ```
-argon2
+argon2i
 argon2id
 scrypt (tarsnap format)
 scrypt
@@ -53,6 +72,10 @@ pbkdf2
 bcrypt
 ```
 
-License
-==
+## Defaults
+
+See `cself kdf -h`.
+
+# License
+
 `checksum` is distributed under the terms of the MIT license. See LICENSE for details.

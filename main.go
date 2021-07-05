@@ -69,16 +69,16 @@ func main() {
 		HideHelpCommand: true,
 		Commands: []*cli.Command{
 			{
-				Name:            "list-funcs",
+				Name:            "list-alg",
 				Aliases:         []string{"l"},
-				Usage:           "list functions",
+				Usage:           "list algorithms",
 				HideHelpCommand: true,
-				UsageText:       "cself list-funcs [OPTIONS]",
+				UsageText:       "cself list-alg [OPTIONS]",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:     "type",
 						Aliases:  []string{"t"},
-						Usage:    "type of funcs to show (hash or kdf)",
+						Usage:    "type of algorithms to show (hash or kdf)",
 						Required: false,
 					},
 				},
