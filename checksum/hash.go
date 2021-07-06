@@ -15,65 +15,115 @@ import (
 	"lukechampine.com/blake3"
 )
 
-const bufferSize = 65536
+const bufferSize int = 65536
 
 // MD5sumReader returns MD5 checksum of content in reader
+// bytes:
 func MD5sumReader(reader io.Reader) (string, error) {
 	return sumReader(md5.New(), reader)
 }
 
-// SHA256sumReader returns SHA256 checksum of content in reader
-func SHA256sumReader(reader io.Reader) (string, error) {
-	return sumReader(sha256.New(), reader)
-}
-
 // SHA1sumReader returns SHA-1 checksum of content in reader
+// bytes:
 func SHA1sumReader(reader io.Reader) (string, error) {
 	return sumReader(sha1.New(), reader)
 }
 
-// SHA512sumReader returns SHA-512 checksum of content in reader
-func SHA512sumReader(reader io.Reader) (string, error) {
-	return sumReader(sha512.New(), reader)
+// SHA2sumReader returns SHA-2 checksum of content in reader
+// bytes: 224, 256, 384, 512
+func SHA2sumReader(reader io.Reader, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = sha256.New()
+	case 224:
+		h = sha256.New224()
+	case 256:
+		h = sha256.New()
+	case 384:
+		h = sha512.New384()
+	case 512:
+		h = sha512.New()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
+	return sumReader(h, reader)
 }
 
 // SHA3sumReader returns SHA-3 checksum of content in reader
-func SHA3sumReader(reader io.Reader) (string, error) {
-	return sumReader(sha3.New224(), reader)
-}
-
-// Blake512sumReader returns BLAKE2b-512 checksum of content in reader
-func Blake512sumReader(reader io.Reader) (string, error) {
-	h, _ := blake2b.New512(nil)
+// bytes: 224, 256, 384, 512
+func SHA3sumReader(reader io.Reader, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = sha3.New224()
+	case 224:
+		h = sha3.New224()
+	case 256:
+		h = sha3.New256()
+	case 384:
+		h = sha3.New384()
+	case 512:
+		h = sha3.New512()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sumReader(h, reader)
 }
 
-// Blake256sumReader returns BLAKE2b-256 checksum of content in reader
-func Blake256sumReader(reader io.Reader) (string, error) {
-	h, _ := blake2b.New256(nil)
+// Blake2bsumReader returns BLAKE2b checksum of content in reader
+// bytes: 256, 384, 512
+func Blake2bsumReader(reader io.Reader, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h, _ = blake2b.New256(nil)
+	case 256:
+		h, _ = blake2b.New256(nil)
+	case 384:
+		h, _ = blake2b.New384(nil)
+	case 512:
+		h, _ = blake2b.New512(nil)
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sumReader(h, reader)
 }
 
-// Blake3256sumReader returns BLAKE3 checksum of content in reader
-func Blake3256sumReader(reader io.Reader) (string, error) {
-	h := blake3.New(32, nil)
+// Blake3sumReader returns BLAKE3 checksum of content in reader
+// bytes: 256, 384, 512
+func Blake3sumReader(reader io.Reader, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = blake3.New(32, nil)
+	case 256:
+		h = blake3.New(32, nil)
+	case 384:
+		h = blake3.New(48, nil)
+	case 512:
+		h = blake3.New(64, nil)
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sumReader(h, reader)
 }
 
-// Blake3512sumReader returns BLAKE3 checksum of content in reader
-func Blake3512sumReader(reader io.Reader) (string, error) {
-	h := blake3.New(64, nil)
+// XXHsumReader returns XXH checksum of content in reader
+// bytes: 32, 64
+func XXHsumReader(reader io.Reader, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = xxhash.NewHash32()
+	case 32:
+		h = xxhash.NewHash32()
+	case 64:
+		h = xxhash.NewHash64()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sumReader(h, reader)
-}
-
-// Xxh32sumReader returns XXH32 checksum of content in reader
-func Xxh32sumReader(reader io.Reader) (string, error) {
-	return sumReader(xxhash.NewHash32(), reader)
-}
-
-// Xxh64sumReader returns XXH64 checksum of content in reader
-func Xxh64sumReader(reader io.Reader) (string, error) {
-	return sumReader(xxhash.NewHash64(), reader)
 }
 
 // sumReader calculates the hash based on a provided hash provider

@@ -32,7 +32,7 @@ func TestSHA256sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.SHA256sum(file); err != nil || sum != "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee" {
+	if sum, err := checksum.SHA2sum(file, 256); err != nil || sum != "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee" {
 		t.Error("SHA256sum(file) failed", sum, err)
 	}
 }
@@ -86,7 +86,7 @@ func TestSHA512sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.SHA512sum(file); err != nil || sum != "e1645e7492f032fb62c674db75500be7b260bfc0daa965821ddb3f8a49b5d33788ee3f046744e2b95afb5c3d8f2500c549ca89d79fc6890885d28e055007424f" {
+	if sum, err := checksum.SHA2sum(file,512); err != nil || sum != "e1645e7492f032fb62c674db75500be7b260bfc0daa965821ddb3f8a49b5d33788ee3f046744e2b95afb5c3d8f2500c549ca89d79fc6890885d28e055007424f" {
 		t.Error("SHA512sum(file) failed", sum, err)
 	}
 }
@@ -104,7 +104,7 @@ func TestSHA3sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.SHA3sum(file); err != nil || sum != "5fd9df158fd7eb737893332c5e19906d8d1352a6932dbf10c0200b53" {
+	if sum, err := checksum.SHA3sum(file, 224); err != nil || sum != "5fd9df158fd7eb737893332c5e19906d8d1352a6932dbf10c0200b53" {
 		t.Error("SHA3sum(file) failed", sum, err)
 	}
 }
@@ -122,7 +122,8 @@ func TestBlake256sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Blake256sum(file); err != nil || sum != "101e81939178f84a6e896fe1c2638f6f9e16711d942c4efec6f28d7519c17b57" {
+	if sum, err := checksum.Blake2bsum(
+		file, 256); err != nil || sum != "101e81939178f84a6e896fe1c2638f6f9e16711d942c4efec6f28d7519c17b57" {
 		t.Error("BLAKE2b256sum(file) failed", sum, err)
 	}
 }
@@ -140,7 +141,8 @@ func TestBlake512sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Blake512sum(file); err != nil || sum != "44e34bbaadd8719e6d65a67803b8fba0d91eb0669f432314fb933932fa601a2fd23f86f9eb39fc30b20cc5bb884a8d4d8edd1748babd8a28038e5d2c85757feb" {
+	if sum, err := checksum.Blake2bsum(
+		file, 512); err != nil || sum != "44e34bbaadd8719e6d65a67803b8fba0d91eb0669f432314fb933932fa601a2fd23f86f9eb39fc30b20cc5bb884a8d4d8edd1748babd8a28038e5d2c85757feb" {
 		t.Error("BLAKE2b512sum(file) failed", sum, err)
 	}
 }
@@ -158,7 +160,7 @@ func TestBlake3256sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Blake3256sum(file); err != nil || sum != "b224a1da2bf5e72b337dc6dde457a05265a06dec8875be379e2ad2be5edb3bf2" {
+	if sum, err := checksum.Blake3sum(file, 256); err != nil || sum != "b224a1da2bf5e72b337dc6dde457a05265a06dec8875be379e2ad2be5edb3bf2" {
 		t.Error("BLAKE3-256sum(file) failed", sum, err)
 	}
 }
@@ -176,7 +178,8 @@ func TestBlake3512sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Blake3512sum(file); err != nil || sum != "b224a1da2bf5e72b337dc6dde457a05265a06dec8875be379e2ad2be5edb3bf21b55688951738e3a7155d6398eb56c6bc35d5bca5f139d98eb7409be51d1be32" {
+	if sum, err := checksum.Blake3sum(file,
+		512); err != nil || sum != "b224a1da2bf5e72b337dc6dde457a05265a06dec8875be379e2ad2be5edb3bf21b55688951738e3a7155d6398eb56c6bc35d5bca5f139d98eb7409be51d1be32" {
 		t.Error("BLAKE3-512sum(file) failed", sum, err)
 	}
 }
@@ -194,7 +197,7 @@ func TestXxh32sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Xxh32sum(file); err != nil || sum != "ec6c369a" {
+	if sum, err := checksum.XXHsum(file, 32); err != nil || sum != "ec6c369a" {
 		t.Error("XXH32sum(file) failed", sum, err)
 	}
 }
@@ -212,7 +215,7 @@ func TestXxh64sumFile(t *testing.T) {
 		}
 	}()
 
-	if sum, err := checksum.Xxh64sum(file); err != nil || sum != "2c908fdf96771c8f" {
+	if sum, err := checksum.XXHsum(file, 64); err != nil || sum != "2c908fdf96771c8f" {
 		t.Error("XXH64sum(file) failed", sum, err)
 	}
 }

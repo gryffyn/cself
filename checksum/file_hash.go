@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"fmt"
 	"hash"
 	"os"
 
@@ -17,62 +18,112 @@ import (
 )
 
 // MD5sum returns MD5 checksum of filename
+// bytes:
 func MD5sum(filename string) (string, error) {
 	return sum(md5.New(), filename)
 }
 
-// SHA256sum returns SHA-256 checksum of filename
-func SHA256sum(filename string) (string, error) {
-	return sum(sha256.New(), filename)
-}
-
 // SHA1sum returns SHA-1 checksum of filename
+// bytes:
 func SHA1sum(filename string) (string, error) {
 	return sum(sha1.New(), filename)
 }
 
-// SHA512sum returns SHA-512 checksum of filename
-func SHA512sum(filename string) (string, error) {
-	return sum(sha512.New(), filename)
+// SHA2sum returns SHA-2 checksum of filename
+// bytes: 224, 256, 384, 512
+func SHA2sum(filename string, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = sha256.New()
+	case 224:
+		h = sha256.New224()
+	case 256:
+		h = sha256.New()
+	case 384:
+		h = sha512.New384()
+	case 512:
+		h = sha512.New()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
+	return sum(h, filename)
 }
 
 // SHA3sum returns SHA-3 checksum of filename
-func SHA3sum(filename string) (string, error) {
-	return sum(sha3.New224(), filename)
-}
-
-// Blake512sum returns BLAKE2b-512 checksum of filename
-func Blake512sum(filename string) (string, error) {
-	h, _ := blake2b.New512(nil)
+// bytes: 224, 256, 384, 512
+func SHA3sum(filename string, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = sha3.New224()
+	case 224:
+		h = sha3.New224()
+	case 256:
+		h = sha3.New256()
+	case 384:
+		h = sha3.New384()
+	case 512:
+		h = sha3.New512()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sum(h, filename)
 }
 
-// Blake256sum returns BLAKE2b-256 checksum of filename
-func Blake256sum(filename string) (string, error) {
-	h, _ := blake2b.New256(nil)
+// Blake2bsum returns BLAKE2b checksum of filename
+// bytes: 256, 384, 512
+func Blake2bsum(filename string, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h, _ = blake2b.New256(nil)
+	case 256:
+		h, _ = blake2b.New256(nil)
+	case 384:
+		h, _ = blake2b.New384(nil)
+	case 512:
+		h, _ = blake2b.New512(nil)
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sum(h, filename)
 }
 
-// Blake3256sum returns BLAKE3 checksum of filename
-func Blake3256sum(filename string) (string, error) {
-	h := blake3.New(32, nil)
+// Blake3sum returns BLAKE3 checksum of filename
+// bytes: 256, 384, 512
+func Blake3sum(filename string, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = blake3.New(32, nil)
+	case 256:
+		h = blake3.New(32, nil)
+	case 384:
+		h = blake3.New(48, nil)
+	case 512:
+		h = blake3.New(64, nil)
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sum(h, filename)
 }
 
-// Blake3512sum returns BLAKE3 checksum of filename
-func Blake3512sum(filename string) (string, error) {
-	h := blake3.New(64, nil)
+// XXHsum returns XXH(32/64) checksum of filename
+// bytes: 32, 64
+func XXHsum(filename string, bytes int) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = xxhash.NewHash32()
+	case 32:
+		h = xxhash.NewHash32()
+	case 64:
+		h = xxhash.NewHash64()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
 	return sum(h, filename)
-}
-
-// Xxh32sum returns XXH32 checksum of filename
-func Xxh32sum(filename string) (string, error) {
-	return sum(xxhash.NewHash32(), filename)
-}
-
-// Xxh64sum returns XXH64 checksum of filename
-func Xxh64sum(filename string) (string, error) {
-	return sum(xxhash.NewHash64(), filename)
 }
 
 // sum calculates the hash based on a provided hash provider

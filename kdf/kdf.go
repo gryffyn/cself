@@ -1,3 +1,4 @@
+// Package kdf computes key derivation and stretching algorithms like bcrypt and argon2
 package kdf
 
 import (
@@ -14,6 +15,7 @@ import (
 	"strings"
 
 	gsk "github.com/gryffyn/go-scrypt-kdf"
+	"github.com/tredoe/osutil/user/crypt"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/pbkdf2"
@@ -42,11 +44,12 @@ var SaltLen = 32
 var KeyLen = 32
 
 // Argon2i returns Argon2i hash of content in reader
-func Argon2i(reader io.Reader, params Params, format bool) (string, error) {
+// formats: raw, unix
+func Argon2i(reader io.Reader, params Params, format string) (string, error) {
 	pw, salt, threads, err := genKDFParams(reader)
 	key := argon2.Key(pw, salt, params.Time, params.Memory, threads, uint32(KeyLen))
 
-	if format {
+	if format != "raw" {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
@@ -63,11 +66,12 @@ func Argon2i(reader io.Reader, params Params, format bool) (string, error) {
 }
 
 // Argon2id returns Argon2id hash of content in reader
-func Argon2id(reader io.Reader, params Params, format bool) (string, error) {
+// formats: raw, unix
+func Argon2id(reader io.Reader, params Params, format string) (string, error) {
 	pw, salt, threads, err := genKDFParams(reader)
 	key := argon2.IDKey(pw, salt, params.Time, params.Memory, threads, uint32(KeyLen))
 
-	if format {
+	if format != "raw" {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
@@ -84,11 +88,12 @@ func Argon2id(reader io.Reader, params Params, format bool) (string, error) {
 }
 
 // PBKDF2 returns PBKDF2 hash of content in reader
-func PBKDF2(reader io.Reader, params Params, format bool) (string, error) {
+// formats: raw, unix
+func PBKDF2(reader io.Reader, params Params, format string) (string, error) {
 	pw, salt, _, err := genKDFParams(reader)
 	key := pbkdf2.Key(pw, salt, int(params.Iter), KeyLen, params.Hmac)
 
-	if format {
+	if format != "raw" {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
@@ -102,15 +107,14 @@ func PBKDF2(reader io.Reader, params Params, format bool) (string, error) {
 	return string(key), err
 }
 
-// ScryptT returns ScryptT hash of content in reader, in tarsnap format
-func ScryptT(reader io.Reader, params Params, format bool) (string, error) {
-	pw, err := io.ReadAll(reader)
-	key, err := gsk.Kdf(pw, params.Scrypt)
-	return string(key), err
-}
-
 // Scrypt returns Scrypt hash of content in reader
-func Scrypt(reader io.Reader, params Params, format bool) (string, error) {
+// formats: raw, tarsnap
+func Scrypt(reader io.Reader, params Params, format string) (string, error) {
+	if format == "tarsnap" {
+		pw, err := io.ReadAll(reader)
+		key, err := gsk.Kdf(pw, params.Scrypt)
+		return string(key), err
+	}
 	pw, salt, _, err := genKDFParams(reader)
 	s := params.Scrypt
 	key, err := scrypt.Key(pw, salt, int(math.Round(math.Pow(2, float64(s.LogN)))), int(s.R), int(s.P), KeyLen)
@@ -118,10 +122,25 @@ func Scrypt(reader io.Reader, params Params, format bool) (string, error) {
 }
 
 // Bcrypt returns Bcrypt hash of content in reader
-func Bcrypt(reader io.Reader, params Params, format bool) (string, error) {
+// formats: raw
+func Bcrypt(reader io.Reader, params Params, format string) (string, error) {
 	pw, err := io.ReadAll(reader)
 	key, err := bcrypt.GenerateFromPassword(pw, params.Cost)
 	return string(key), err
+}
+
+// Crypt returns crypt-sha512 hash of content in reader
+// formats: unix
+func Crypt(reader io.Reader, params Params, format string) (string, error) {
+	pw, err := io.ReadAll(reader)
+	c := crypt.New(crypt.SHA512)
+	salt := make([]byte, SaltLen)
+	_, err = rand.Read(salt)
+	if err != nil {
+		return "", err
+	}
+	key, err := c.Generate(pw, salt)
+	return key, err
 }
 
 func genKDFParams(reader io.Reader) ([]byte, []byte, uint8, error) {
