@@ -19,23 +19,23 @@ import (
 )
 
 func main() {
-	hashes := map[string]interface{} {
-		"md5":        checksum.MD5sum,
-		"sha1":       checksum.SHA1sum,
-		"sha2":       checksum.SHA2sum,
-		"sha3":       checksum.SHA3sum,
-		"blake2b":    checksum.Blake2bsum,
-		"blake3":     checksum.Blake3sum,
-		"xxhash":     checksum.XXHsum,
+	hashes := map[string]interface{}{
+		"md5":     checksum.MD5sum,
+		"sha1":    checksum.SHA1sum,
+		"sha2":    checksum.SHA2sum,
+		"sha3":    checksum.SHA3sum,
+		"blake2b": checksum.Blake2bsum,
+		"blake3":  checksum.Blake3sum,
+		"xxhash":  checksum.XXHsum,
 	}
 	hashesReader := map[string]interface{}{
-		"md5":        checksum.MD5sumReader,
-		"sha1":       checksum.SHA1sumReader,
-		"sha2":       checksum.SHA2sumReader,
-		"sha3":       checksum.SHA3sumReader,
-		"blake2b":    checksum.Blake2bsumReader,
-		"blake3":     checksum.Blake3sumReader,
-		"xxhash":     checksum.XXHsumReader,
+		"md5":     checksum.MD5sumReader,
+		"sha1":    checksum.SHA1sumReader,
+		"sha2":    checksum.SHA2sumReader,
+		"sha3":    checksum.SHA3sumReader,
+		"blake2b": checksum.Blake2bsumReader,
+		"blake3":  checksum.Blake3sumReader,
+		"xxhash":  checksum.XXHsumReader,
 	}
 	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) (string, error){
 		"argon2i":  kdf.Argon2i,
@@ -119,7 +119,9 @@ func main() {
 						if fn, ok := hashesReader[hashfunc]; ok {
 							output, err = fn.(func(io.Reader, int) (string, error))(bufio.NewReader(os.Stdin),
 								c.Int("bytes"))
-							fmt.Println(output + "  -")
+							if err == nil {
+								fmt.Println(output + "  -")
+							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
 						}
@@ -127,7 +129,9 @@ func main() {
 					} else {
 						if fn, ok := hashes[hashfunc]; ok {
 							output, err = fn.(func(string, int) (string, error))(c.Args().Get(0), c.Int("bytes"))
-							fmt.Println(output + "  " + c.Args().Get(0))
+							if err == nil {
+								fmt.Println(output + "  " + c.Args().Get(0))
+							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
 						}
@@ -137,8 +141,8 @@ func main() {
 			},
 			{
 				Name:            "kdf",
-				Aliases:         []string{"h"},
-				Usage:           "hash mode",
+				Aliases:         []string{"k"},
+				Usage:           "kdf mode",
 				HideHelpCommand: true,
 				UsageText:       "cself kdf [OPTIONS] password",
 				Flags: []cli.Flag{
@@ -218,7 +222,7 @@ func main() {
 
 					&cli.StringFlag{
 						Name:     "format",
-						Aliases:  []string{"r"},
+						Aliases:  []string{"f"},
 						Value:    "unix",
 						Usage:    "raw, unix, or tarsnap",
 						Required: false,
@@ -253,9 +257,10 @@ func main() {
 					hashfunc := c.String("a")
 					if isPipe() {
 						if fn, ok := kdfs[hashfunc]; ok {
-
 							output, err = fn(bufio.NewReader(os.Stdin), params, c.String("format"))
-							fmt.Println(output)
+							if err == nil {
+								fmt.Println(output)
+							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
 						}
@@ -263,7 +268,9 @@ func main() {
 						if fn, ok := kdfs[hashfunc]; ok {
 							r := strings.NewReader(c.Args().Get(0))
 							output, err = fn(r, params, c.String("format"))
-							fmt.Println(output)
+							if err == nil {
+								fmt.Println(output)
+							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
 						}

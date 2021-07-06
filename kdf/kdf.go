@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	gsk "github.com/gryffyn/go-scrypt-kdf"
-	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/pbkdf2"
@@ -53,11 +53,9 @@ func Argon2i(reader io.Reader, params Params, format string) (string, error) {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
-
 		// Return a string using the standard encoded hash representation.
 		encodedHash := fmt.Sprintf("$argon2i$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, params.Memory,
 			params.Time, threads, b64Salt, b64Hash)
-
 		return encodedHash, err
 	}
 
@@ -75,11 +73,9 @@ func Argon2id(reader io.Reader, params Params, format string) (string, error) {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
-
 		// Return a string using the standard encoded hash representation.
 		encodedHash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, params.Memory,
 			params.Time, threads, b64Salt, b64Hash)
-
 		return encodedHash, err
 	}
 
@@ -97,10 +93,8 @@ func PBKDF2(reader io.Reader, params Params, format string) (string, error) {
 		// Base64 encode the salt and hashed password.
 		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 		b64Hash := base64.RawStdEncoding.EncodeToString(key)
-
 		// Return a string using the standard encoded hash representation.
 		encodedHash := fmt.Sprintf("$pbkdf2-%s$i=%d$%s$%s", getHashFunc(params.Hmac), params.Iter, b64Salt, b64Hash)
-
 		return encodedHash, err
 	}
 
@@ -113,16 +107,25 @@ func Scrypt(reader io.Reader, params Params, format string) (string, error) {
 	if format == "tarsnap" {
 		pw, err := io.ReadAll(reader)
 		key, err := gsk.Kdf(pw, params.Scrypt)
-		return string(key), err
+		return hex.EncodeToString(key), err
 	}
 	pw, salt, _, err := genKDFParams(reader)
 	s := params.Scrypt
-	key, err := scrypt.Key(pw, salt, int(math.Round(math.Pow(2, float64(s.LogN)))), int(s.R), int(s.P), KeyLen)
-	return string(key), err
+	n := int(math.Round(math.Pow(2, float64(s.LogN))))
+	key, err := scrypt.Key(pw, salt, n, int(s.R), int(s.P), KeyLen)
+	if format == "unix" {
+		// Base64 encode the salt and hashed password.
+		b64Salt := base64.RawStdEncoding.EncodeToString(salt)
+		b64Hash := base64.RawStdEncoding.EncodeToString(key)
+		// Return a string using the standard encoded hash representation.
+		encodedHash := fmt.Sprintf("$scrypt$N=%d,r=%d,p=%d$%s$%s", n, int(s.R), int(s.P), b64Salt, b64Hash)
+		return encodedHash, err
+	}
+	return hex.EncodeToString(key), err
 }
 
 // Bcrypt returns Bcrypt hash of content in reader
-// formats: raw
+// formats: unix
 func Bcrypt(reader io.Reader, params Params, format string) (string, error) {
 	pw, err := io.ReadAll(reader)
 	key, err := bcrypt.GenerateFromPassword(pw, params.Cost)
@@ -133,13 +136,14 @@ func Bcrypt(reader io.Reader, params Params, format string) (string, error) {
 // formats: unix
 func Crypt(reader io.Reader, params Params, format string) (string, error) {
 	pw, err := io.ReadAll(reader)
-	c := crypt.New(crypt.SHA512)
 	salt := make([]byte, SaltLen)
 	_, err = rand.Read(salt)
 	if err != nil {
 		return "", err
 	}
-	key, err := c.Generate(pw, salt)
+	cs := sha512_crypt.New()
+	hs := hex.EncodeToString(salt)
+	key, err := cs.Generate(pw, []byte("$6$"+hs[:16]))
 	return key, err
 }
 

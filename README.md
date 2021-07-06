@@ -41,7 +41,7 @@ func main() {
 	file := "~/Downloads/ubuntu-gnome-16.04-desktop-amd64.iso"
 	md5, _ := checksum.MD5sum(file)
 	fmt.Println(md5)
-	sha256, _ := checksum.SHA256sum(file)
+	sha256, _ := checksum.SHA2sum(file, 256)
 	fmt.Println(sha256)
 }
 ```
@@ -51,25 +51,32 @@ func main() {
 ```
 md5
 sha1
-sha256
-sha512
+sha2-224
+    -256
+    -384
+    -512 
 sha3-224
-xxhash-32
-xxhash-64
+    -256
+    -384
+    -512 
 blake2b-256
-blake2b-512
+       -384
+       -512
 blake3-256
-blake3-512
+      -384
+      -512
+xxhash-32
+      -64
 ```
 
 ### KDFs
 ```
 argon2i
 argon2id
-scrypt (tarsnap format)
 scrypt
 pbkdf2
 bcrypt
+crypt-sha512
 ```
 
 ## Defaults
