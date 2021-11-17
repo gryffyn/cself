@@ -71,9 +71,9 @@ func SHA3sum(filename string, bytes int) (string, error) {
 	return sum(h, filename)
 }
 
-// Blake2bsum returns BLAKE2b checksum of filename
+// BLAKE2Bsum returns BLAKE2b checksum of filename
 // bytes: 256, 384, 512
-func Blake2bsum(filename string, bytes int) (string, error) {
+func BLAKE2Bsum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -90,9 +90,9 @@ func Blake2bsum(filename string, bytes int) (string, error) {
 	return sum(h, filename)
 }
 
-// Blake3sum returns BLAKE3 checksum of filename
+// BLAKE3sum returns BLAKE3 checksum of filename
 // bytes: 256, 384, 512
-func Blake3sum(filename string, bytes int) (string, error) {
+func BLAKE3sum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:

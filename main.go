@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 
 	"git.neveris.one/gryffyn/cself/checksum"
@@ -18,32 +19,60 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func dcS(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
+	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn + "sum"))
+	var inputs []reflect.Value
+	for _, v := range args {
+		inputs = append(inputs, reflect.ValueOf(v))
+	}
+	return method.Call(inputs)
+}
+
+func dcSR(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
+	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn + "sumReader"))
+	var inputs []reflect.Value
+	for _, v := range args {
+		inputs = append(inputs, reflect.ValueOf(v))
+	}
+	return method.Call(inputs)
+}
+
+func dcK(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
+	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn))
+	var inputs []reflect.Value
+	for _, v := range args {
+		inputs = append(inputs, reflect.ValueOf(v))
+	}
+	return method.Call(inputs)
+}
+
 func main() {
 	hashes := map[string]interface{}{
 		"md5":     checksum.MD5sum,
 		"sha1":    checksum.SHA1sum,
 		"sha2":    checksum.SHA2sum,
 		"sha3":    checksum.SHA3sum,
-		"blake2b": checksum.Blake2bsum,
-		"blake3":  checksum.Blake3sum,
-		"xxhash":  checksum.XXHsum,
+		"blake2b": checksum.BLAKE2Bsum,
+		"blake3":  checksum.BLAKE3sum,
+		"xxh":     checksum.XXHsum,
 	}
 	hashesReader := map[string]interface{}{
 		"md5":     checksum.MD5sumReader,
 		"sha1":    checksum.SHA1sumReader,
 		"sha2":    checksum.SHA2sumReader,
 		"sha3":    checksum.SHA3sumReader,
-		"blake2b": checksum.Blake2bsumReader,
-		"blake3":  checksum.Blake3sumReader,
-		"xxhash":  checksum.XXHsumReader,
+		"blake2b": checksum.BLAKE2BsumReader,
+		"blake3":  checksum.BLAKE3sumReader,
+		"xxh":     checksum.XXHsumReader,
 	}
-	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) (string, error){
-		"argon2i":  kdf.Argon2i,
-		"argon2id": kdf.Argon2id,
+	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) ([]byte, error){
+		"argon2i":  kdf.ARGON2I,
+		"argon2id": kdf.ARGON2ID,
 		"pbkdf2":   kdf.PBKDF2,
-		"scrypt":   kdf.Scrypt,
-		"bcrypt":   kdf.Bcrypt,
-		"crypt":    kdf.Crypt,
+		"scrypt":   kdf.SCRYPT,
+		"bcrypt":   kdf.BCRYPT,
+		"crypt":    kdf.CRYPT,
+		"hkdf":     kdf.HKDF,
 	}
 
 	app := cli.App{
@@ -127,13 +156,17 @@ func main() {
 						}
 
 					} else {
-						if fn, ok := hashes[hashfunc]; ok {
-							output, err = fn.(func(string, int) (string, error))(c.Args().Get(0), c.Int("bytes"))
-							if err == nil {
-								fmt.Println(output + "  " + c.Args().Get(0))
+						if c.Args().Get(0) != "" {
+							if fn, ok := hashes[hashfunc]; ok {
+								output, err = fn.(func(string, int) (string, error))(c.Args().Get(0), c.Int("bytes"))
+								if err == nil {
+									fmt.Println(output + "  " + c.Args().Get(0))
+								}
+							} else {
+								fmt.Println("Hash function '" + hashfunc + "' not found.")
 							}
 						} else {
-							fmt.Println("Hash function '" + hashfunc + "' not found.")
+							cli.ShowAppHelpAndExit(c, 0)
 						}
 					}
 					return err
@@ -152,11 +185,20 @@ func main() {
 						Usage:    "kdf algorithm",
 						Required: false,
 					},
-
 					&cli.IntFlag{
 						Name:     "saltlen",
 						Usage:    "length of random salt",
 						Value:    32,
+						Required: false,
+					},
+					&cli.StringFlag{
+						Name:     "salt",
+						Usage:    "salt value (default: random bytes)",
+						Required: false,
+					},
+					&cli.StringFlag{
+						Name:     "info",
+						Usage:    "HKDF - info value to append to random bytes",
 						Required: false,
 					},
 					&cli.IntFlag{
@@ -165,7 +207,6 @@ func main() {
 						Value:    32,
 						Required: false,
 					},
-
 					&cli.IntFlag{
 						Name:     "time",
 						Aliases:  []string{"t"},
@@ -189,48 +230,47 @@ func main() {
 					},
 					&cli.StringFlag{
 						Name:     "hmac",
-						Usage:    "PBKDF2 - HMAC function",
+						Usage:    "PBKDF2/HKDF - HMAC function",
 						Value:    "sha256",
 						Required: false,
 					},
 					&cli.IntFlag{
 						Name:     "logN",
 						Aliases:  []string{"l"},
-						Usage:    "Scrypt - logN",
+						Usage:    "SCRYPT - logN",
 						Value:    15,
 						Required: false,
 					},
 					&cli.IntFlag{
 						Name:     "R",
-						Usage:    "Scrypt - R",
+						Usage:    "SCRYPT - R",
 						Value:    8,
 						Required: false,
 					},
 					&cli.IntFlag{
 						Name:     "P",
-						Usage:    "Scrypt - P",
+						Usage:    "SCRYPT - P",
 						Value:    1,
 						Required: false,
 					},
 					&cli.IntFlag{
 						Name:     "cost",
 						Aliases:  []string{"c"},
-						Usage:    "Bcrypt - cost",
+						Usage:    "BCRYPT - cost",
 						Value:    10,
 						Required: false,
 					},
-
 					&cli.StringFlag{
 						Name:     "format",
 						Aliases:  []string{"f"},
 						Value:    "unix",
-						Usage:    "raw, unix, or tarsnap",
+						Usage:    "output format - raw, unix, hex, or tarsnap",
 						Required: false,
 					},
 				},
 				Action: func(c *cli.Context) error {
 					var err error
-					var output string
+					var output []byte
 					if c.Int("saltlen") != 32 {
 						kdf.SaltLen = c.Int("saltlen")
 					}
@@ -252,6 +292,8 @@ func main() {
 							R:    uint32(c.Int("R")),
 							P:    uint32(c.Int("P")),
 						},
+						Info: c.String("info"),
+						Salt: c.String("salt"),
 						Cost: c.Int("cost"),
 					}
 					hashfunc := c.String("a")
@@ -259,7 +301,11 @@ func main() {
 						if fn, ok := kdfs[hashfunc]; ok {
 							output, err = fn(bufio.NewReader(os.Stdin), params, c.String("format"))
 							if err == nil {
-								fmt.Println(output)
+								if hashfunc != "hkdf" {
+									fmt.Println(string(output))
+								} else {
+									fmt.Println(output)
+								}
 							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
@@ -269,7 +315,11 @@ func main() {
 							r := strings.NewReader(c.Args().Get(0))
 							output, err = fn(r, params, c.String("format"))
 							if err == nil {
-								fmt.Println(output)
+								if hashfunc != "hkdf" || c.String("format") == "hex" {
+									fmt.Println(string(output))
+								} else {
+									fmt.Println(output)
+								}
 							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
