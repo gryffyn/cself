@@ -77,6 +77,7 @@ scrypt
 pbkdf2
 bcrypt
 crypt-sha512
+hkdf
 ```
 
 ## Defaults
