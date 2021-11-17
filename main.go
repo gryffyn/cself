@@ -47,7 +47,7 @@ func dcK(obj interface{}, fn string, args map[string]interface{}) (res []reflect
 }
 
 func main() {
-	hashes := map[string]func(filename string, bytes int, poly string) (string, error){
+	hashes := map[string]interface{}{
 		"md5":     checksum.MD5sum,
 		"sha1":    checksum.SHA1sum,
 		"sha2":    checksum.SHA2sum,
@@ -58,7 +58,7 @@ func main() {
 		"crc32":   checksum.CRC32sum,
 		"crc64":   checksum.CRC64sum,
 	}
-	hashesReader := map[string]func(reader io.Reader, bytes int, poly string) (string, error){
+	hashesReader := map[string]interface{}{
 		"md5":     checksum.MD5sumReader,
 		"sha1":    checksum.SHA1sumReader,
 		"sha2":    checksum.SHA2sumReader,
@@ -155,7 +155,8 @@ func main() {
 					hashfunc := c.String("a")
 					if isPipe() {
 						if fn, ok := hashesReader[hashfunc]; ok {
-							output, err = fn(bufio.NewReader(os.Stdin), c.Int("bytes"), c.String("poly"))
+							output, err = fn.(func(io.Reader, int, string) (string, error))(bufio.NewReader(os.Stdin),
+								c.Int("bytes"), c.String("poly"))
 							if err == nil {
 								fmt.Println(output + "  -")
 							}
@@ -166,7 +167,8 @@ func main() {
 					} else {
 						if c.Args().Get(0) != "" {
 							if fn, ok := hashes[hashfunc]; ok {
-								output, err = fn(c.Args().Get(0), c.Int("bytes"), c.String("poly"))
+								output, err = fn.(func(string, int, string) (string, error))(c.Args().Get(0),
+									c.Int("bytes"), c.String("poly"))
 								if err == nil {
 									fmt.Println(output + "  " + c.Args().Get(0))
 								}

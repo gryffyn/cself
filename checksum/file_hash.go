@@ -21,13 +21,13 @@ import (
 
 // MD5sum returns MD5 checksum of filename
 // bytes:
-func MD5sum(filename string, _ int, _ string) (string, error) {
+func MD5sum(filename string) (string, error) {
 	return sum(md5.New(), filename)
 }
 
 // SHA1sum returns SHA-1 checksum of filename
 // bytes:
-func SHA1sum(filename string, _ int, _ string) (string, error) {
+func SHA1sum(filename string) (string, error) {
 	return sum(sha1.New(), filename)
 }
 
@@ -57,7 +57,7 @@ func CRC64sum(filename string, _ int, poly string) (string, error) {
 
 // SHA2sum returns SHA-2 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA2sum(filename string, bytes int, _ string) (string, error) {
+func SHA2sum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -78,7 +78,7 @@ func SHA2sum(filename string, bytes int, _ string) (string, error) {
 
 // SHA3sum returns SHA-3 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA3sum(filename string, bytes int, _ string) (string, error) {
+func SHA3sum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -99,7 +99,7 @@ func SHA3sum(filename string, bytes int, _ string) (string, error) {
 
 // BLAKE2Bsum returns BLAKE2b checksum of filename
 // bytes: 256, 384, 512
-func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
+func BLAKE2Bsum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -118,7 +118,7 @@ func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
 
 // BLAKE3sum returns BLAKE3 checksum of filename
 // bytes: 256, 384, 512
-func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
+func BLAKE3sum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -137,7 +137,7 @@ func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
 
 // XXHsum returns XXH(32/64) checksum of filenamePackage crc32 implements the 32-bit cyclic redundancy check, or CRC-32, checksum. See https://en.wikipedia.org/wiki/Cyclic_redundancy_check for information.
 // bytes: 32, 64
-func XXHsum(filename string, bytes int, _ string) (string, error) {
+func XXHsum(filename string, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:

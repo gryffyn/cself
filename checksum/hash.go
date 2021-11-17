@@ -21,13 +21,13 @@ const bufferSize int = 65536
 
 // MD5sumReader returns MD5 checksum of content in reader
 // bytes:
-func MD5sumReader(reader io.Reader, _ int, _ string) (string, error) {
+func MD5sumReader(reader io.Reader) (string, error) {
 	return sumReader(md5.New(), reader)
 }
 
 // SHA1sumReader returns SHA-1 checksum of content in reader
 // bytes:
-func SHA1sumReader(reader io.Reader, _ int, _ string) (string, error) {
+func SHA1sumReader(reader io.Reader) (string, error) {
 	return sumReader(sha1.New(), reader)
 }
 
@@ -57,7 +57,7 @@ func CRC64Reader(reader io.Reader, _ int, poly string) (string, error) {
 
 // SHA2sumReader returns SHA-2 checksum of content in reader
 // bytes: 224, 256, 384, 512
-func SHA2sumReader(reader io.Reader, bytes int, _ string) (string, error) {
+func SHA2sumReader(reader io.Reader, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -78,7 +78,7 @@ func SHA2sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 
 // SHA3sumReader returns SHA-3 checksum of content in reader
 // bytes: 224, 256, 384, 512
-func SHA3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
+func SHA3sumReader(reader io.Reader, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -99,7 +99,7 @@ func SHA3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 
 // BLAKE2BsumReader returns BLAKE2b checksum of content in reader
 // bytes: 256, 384, 512
-func BLAKE2BsumReader(reader io.Reader, bytes int, _ string) (string, error) {
+func BLAKE2BsumReader(reader io.Reader, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -118,7 +118,7 @@ func BLAKE2BsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 
 // BLAKE3sumReader returns BLAKE3 checksum of content in reader
 // bytes: 256, 384, 512
-func BLAKE3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
+func BLAKE3sumReader(reader io.Reader, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -137,7 +137,7 @@ func BLAKE3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 
 // XXHsumReader returns XXH checksum of content in reader
 // bytes: 32, 64
-func XXHsumReader(reader io.Reader, bytes int, _ string) (string, error) {
+func XXHsumReader(reader io.Reader, bytes int) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
