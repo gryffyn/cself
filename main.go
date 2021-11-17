@@ -47,7 +47,7 @@ func dcK(obj interface{}, fn string, args map[string]interface{}) (res []reflect
 }
 
 func main() {
-	hashes := map[string]interface{}{
+	hashes := map[string]func(filename string, bytes int, poly string) (string, error){
 		"md5":     checksum.MD5sum,
 		"sha1":    checksum.SHA1sum,
 		"sha2":    checksum.SHA2sum,
@@ -55,8 +55,10 @@ func main() {
 		"blake2b": checksum.BLAKE2Bsum,
 		"blake3":  checksum.BLAKE3sum,
 		"xxh":     checksum.XXHsum,
+		"crc32":   checksum.CRC32sum,
+		"crc64":   checksum.CRC64sum,
 	}
-	hashesReader := map[string]interface{}{
+	hashesReader := map[string]func(reader io.Reader, bytes int, poly string) (string, error){
 		"md5":     checksum.MD5sumReader,
 		"sha1":    checksum.SHA1sumReader,
 		"sha2":    checksum.SHA2sumReader,
@@ -64,6 +66,8 @@ func main() {
 		"blake2b": checksum.BLAKE2BsumReader,
 		"blake3":  checksum.BLAKE3sumReader,
 		"xxh":     checksum.XXHsumReader,
+		"crc32":   checksum.CRC32Reader,
+		"crc64":   checksum.CRC64Reader,
 	}
 	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) ([]byte, error){
 		"argon2i":  kdf.ARGON2I,
@@ -133,6 +137,11 @@ func main() {
 						Usage:    "hash algorithm",
 						Required: false,
 					},
+					&cli.StringFlag{
+						Name:     "poly",
+						Usage:    "polynomial for CRC",
+						Required: false,
+					},
 					&cli.IntFlag{
 						Name:     "bytes",
 						Aliases:  []string{"b"},
@@ -146,8 +155,7 @@ func main() {
 					hashfunc := c.String("a")
 					if isPipe() {
 						if fn, ok := hashesReader[hashfunc]; ok {
-							output, err = fn.(func(io.Reader, int) (string, error))(bufio.NewReader(os.Stdin),
-								c.Int("bytes"))
+							output, err = fn(bufio.NewReader(os.Stdin), c.Int("bytes"), c.String("poly"))
 							if err == nil {
 								fmt.Println(output + "  -")
 							}
@@ -158,7 +166,7 @@ func main() {
 					} else {
 						if c.Args().Get(0) != "" {
 							if fn, ok := hashes[hashfunc]; ok {
-								output, err = fn.(func(string, int) (string, error))(c.Args().Get(0), c.Int("bytes"))
+								output, err = fn(c.Args().Get(0), c.Int("bytes"), c.String("poly"))
 								if err == nil {
 									fmt.Println(output + "  " + c.Args().Get(0))
 								}

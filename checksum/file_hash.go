@@ -9,6 +9,8 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"hash"
+	"hash/crc32"
+	"hash/crc64"
 	"os"
 
 	"github.com/OneOfOne/xxhash"
@@ -19,19 +21,43 @@ import (
 
 // MD5sum returns MD5 checksum of filename
 // bytes:
-func MD5sum(filename string) (string, error) {
+func MD5sum(filename string, _ int, _ string) (string, error) {
 	return sum(md5.New(), filename)
 }
 
 // SHA1sum returns SHA-1 checksum of filename
 // bytes:
-func SHA1sum(filename string) (string, error) {
+func SHA1sum(filename string, _ int, _ string) (string, error) {
 	return sum(sha1.New(), filename)
+}
+
+// CRC32sum returns CRC32 checksum of content in reader
+// bytes:
+func CRC32sum(filename string, _ int, poly string) (string, error) {
+	switch poly {
+	case "c":
+		return sum(crc32.New(crc32.MakeTable(crc32.Castagnoli)), filename)
+	case "k":
+		return sum(crc32.New(crc32.MakeTable(crc32.Koopman)), filename)
+	default:
+		return sum(crc32.NewIEEE(), filename)
+	}
+}
+
+// CRC64sum returns CRC64 checksum of content in reader
+// bytes:
+func CRC64sum(filename string, _ int, poly string) (string, error) {
+	switch poly {
+	case "e":
+		return sum(crc64.New(crc64.MakeTable(crc64.ECMA)), filename)
+	default:
+		return sum(crc64.New(crc64.MakeTable(crc64.ISO)), filename)
+	}
 }
 
 // SHA2sum returns SHA-2 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA2sum(filename string, bytes int) (string, error) {
+func SHA2sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -52,7 +78,7 @@ func SHA2sum(filename string, bytes int) (string, error) {
 
 // SHA3sum returns SHA-3 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA3sum(filename string, bytes int) (string, error) {
+func SHA3sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -73,7 +99,7 @@ func SHA3sum(filename string, bytes int) (string, error) {
 
 // BLAKE2Bsum returns BLAKE2b checksum of filename
 // bytes: 256, 384, 512
-func BLAKE2Bsum(filename string, bytes int) (string, error) {
+func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -92,7 +118,7 @@ func BLAKE2Bsum(filename string, bytes int) (string, error) {
 
 // BLAKE3sum returns BLAKE3 checksum of filename
 // bytes: 256, 384, 512
-func BLAKE3sum(filename string, bytes int) (string, error) {
+func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -109,9 +135,9 @@ func BLAKE3sum(filename string, bytes int) (string, error) {
 	return sum(h, filename)
 }
 
-// XXHsum returns XXH(32/64) checksum of filename
+// XXHsum returns XXH(32/64) checksum of filenamePackage crc32 implements the 32-bit cyclic redundancy check, or CRC-32, checksum. See https://en.wikipedia.org/wiki/Cyclic_redundancy_check for information.
 // bytes: 32, 64
-func XXHsum(filename string, bytes int) (string, error) {
+func XXHsum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:

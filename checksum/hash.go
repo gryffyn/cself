@@ -7,6 +7,8 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"hash"
+	"hash/crc32"
+	"hash/crc64"
 	"io"
 
 	"github.com/OneOfOne/xxhash"
@@ -19,19 +21,43 @@ const bufferSize int = 65536
 
 // MD5sumReader returns MD5 checksum of content in reader
 // bytes:
-func MD5sumReader(reader io.Reader) (string, error) {
+func MD5sumReader(reader io.Reader, _ int, _ string) (string, error) {
 	return sumReader(md5.New(), reader)
 }
 
 // SHA1sumReader returns SHA-1 checksum of content in reader
 // bytes:
-func SHA1sumReader(reader io.Reader) (string, error) {
+func SHA1sumReader(reader io.Reader, _ int, _ string) (string, error) {
 	return sumReader(sha1.New(), reader)
+}
+
+// CRC32Reader returns CRC32 checksum of content in reader
+// bytes:
+func CRC32Reader(reader io.Reader, _ int, poly string) (string, error) {
+	switch poly {
+	case "c":
+		return sumReader(crc32.New(crc32.MakeTable(crc32.Castagnoli)), reader)
+	case "k":
+		return sumReader(crc32.New(crc32.MakeTable(crc32.Koopman)), reader)
+	default:
+		return sumReader(crc32.NewIEEE(), reader)
+	}
+}
+
+// CRC64Reader returns CRC64 checksum of content in reader
+// bytes:
+func CRC64Reader(reader io.Reader, _ int, poly string) (string, error) {
+	switch poly {
+	case "e":
+		return sumReader(crc64.New(crc64.MakeTable(crc64.ECMA)), reader)
+	default:
+		return sumReader(crc64.New(crc64.MakeTable(crc64.ISO)), reader)
+	}
 }
 
 // SHA2sumReader returns SHA-2 checksum of content in reader
 // bytes: 224, 256, 384, 512
-func SHA2sumReader(reader io.Reader, bytes int) (string, error) {
+func SHA2sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -52,7 +78,7 @@ func SHA2sumReader(reader io.Reader, bytes int) (string, error) {
 
 // SHA3sumReader returns SHA-3 checksum of content in reader
 // bytes: 224, 256, 384, 512
-func SHA3sumReader(reader io.Reader, bytes int) (string, error) {
+func SHA3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -73,7 +99,7 @@ func SHA3sumReader(reader io.Reader, bytes int) (string, error) {
 
 // BLAKE2BsumReader returns BLAKE2b checksum of content in reader
 // bytes: 256, 384, 512
-func BLAKE2BsumReader(reader io.Reader, bytes int) (string, error) {
+func BLAKE2BsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -92,7 +118,7 @@ func BLAKE2BsumReader(reader io.Reader, bytes int) (string, error) {
 
 // BLAKE3sumReader returns BLAKE3 checksum of content in reader
 // bytes: 256, 384, 512
-func BLAKE3sumReader(reader io.Reader, bytes int) (string, error) {
+func BLAKE3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -111,7 +137,7 @@ func BLAKE3sumReader(reader io.Reader, bytes int) (string, error) {
 
 // XXHsumReader returns XXH checksum of content in reader
 // bytes: 32, 64
-func XXHsumReader(reader io.Reader, bytes int) (string, error) {
+func XXHsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:

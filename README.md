@@ -49,6 +49,11 @@ func main() {
 ## Algorithms
 ### Hash functions
 ```
+crc32-IEEE
+     -Koopman ('k')
+     -Castagnoli ('c')
+crc64-ISO
+     -ECMA ('e')
 md5
 sha1
 sha2-224
