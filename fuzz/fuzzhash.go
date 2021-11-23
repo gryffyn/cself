@@ -5,7 +5,7 @@ import (
 
 	"github.com/eciavatta/sdhash"
 	"github.com/glaslos/ssdeep"
-	"github.com/glaslos/tlsh"
+	"github.com/gryffyn/tlsh"
 )
 
 type FuzzHash struct {
