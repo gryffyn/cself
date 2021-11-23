@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"git.neveris.one/gryffyn/cself/checksum"
+	"git.neveris.one/gryffyn/cself/fuzz"
 	"git.neveris.one/gryffyn/cself/kdf"
 	gsk "github.com/gryffyn/go-scrypt-kdf"
 	"github.com/urfave/cli/v2"
@@ -57,6 +58,9 @@ func main() {
 		"xxh":     checksum.XXHsum,
 		"crc32":   checksum.CRC32sum,
 		"crc64":   checksum.CRC64sum,
+		"fnv":     checksum.FNVsum,
+		"fnva":    checksum.FNVasum,
+		"adler32":   checksum.Adler32sum,
 	}
 	hashesReader := map[string]interface{}{
 		"md5":     checksum.MD5sumReader,
@@ -68,6 +72,9 @@ func main() {
 		"xxh":     checksum.XXHsumReader,
 		"crc32":   checksum.CRC32Reader,
 		"crc64":   checksum.CRC64Reader,
+		"fnv":     checksum.FNVsumReader,
+		"fnva":    checksum.FNVasumReader,
+		"adler32":   checksum.Adler32sumReader,
 	}
 	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) ([]byte, error){
 		"argon2i":  kdf.ARGON2I,
@@ -95,7 +102,7 @@ func main() {
 					&cli.StringFlag{
 						Name:     "type",
 						Aliases:  []string{"t"},
-						Usage:    "type of algorithms to show (hash or kdf)",
+						Usage:    "type of algorithms to show (hash, kdf, fuzzy)",
 						Required: false,
 					},
 				},
@@ -111,6 +118,8 @@ func main() {
 						for k := range kdfs {
 							fmt.Println(k)
 						}
+					case "fuzzy":
+						fmt.Println("Fuzzy:\ntlsh\nssdeep\nsdhash")
 					default:
 						fmt.Println("Hashes:")
 						for k := range hashes {
@@ -120,6 +129,7 @@ func main() {
 						for k := range kdfs {
 							fmt.Println(k)
 						}
+						fmt.Println("\nFuzzy:\ntlsh\nssdeep\nsdhash")
 					}
 					return nil
 				},
@@ -163,7 +173,6 @@ func main() {
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
 						}
-
 					} else {
 						if c.Args().Get(0) != "" {
 							if fn, ok := hashes[hashfunc]; ok {
@@ -174,6 +183,64 @@ func main() {
 								}
 							} else {
 								fmt.Println("Hash function '" + hashfunc + "' not found.")
+							}
+						} else {
+							cli.ShowAppHelpAndExit(c, 0)
+						}
+					}
+					return err
+				},
+			},
+			{
+				Name:            "fuzzyhash",
+				Aliases:         []string{"f"},
+				Usage:           "fuzzy hash mode",
+				HideHelpCommand: true,
+				UsageText:       "cself fuzzyhash [OPTIONS] file",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "algorithm",
+						Aliases:  []string{"a"},
+						Value:    "ssdeep",
+						Usage:    "algorithm",
+						Required: false,
+					},
+					&cli.StringFlag{
+						Name:     "input-hash",
+						Aliases:  []string{"i"},
+						Usage:    "hash input to compare to",
+						Required: false,
+					},
+					// TODO: add input-filename and allow comparing two files
+				},
+				Action: func(c *cli.Context) error {
+					var err error
+					var compare bool
+					hashfunc := c.String("algorithm")
+					if c.String("input-hash") != "" {
+						compare = true
+					}
+					if isPipe() {
+						bytes, err := io.ReadAll(bufio.NewReader(os.Stdin))
+						fh, err := fuzz.SumReader(hashfunc, bytes, compare, c.String("input-hash"))
+						if err != nil {
+							log.Fatalln(err)
+						}
+						if compare {
+							fmt.Printf("Input diff is %d\n", fh.Diff)
+						} else {
+							fmt.Printf("%s  -\n", strings.TrimSpace(fh.String))
+						}
+					} else {
+						if c.Args().Get(0) != "" {
+							fh, err := fuzz.Sum(hashfunc, c.Args().Get(0), compare, c.String("input-hash"))
+							if err != nil {
+								log.Fatalln(err)
+							}
+							if compare {
+								fmt.Printf("Input diff is %d\n", fh.Diff)
+							} else {
+								fmt.Printf("%s  %s\n", strings.TrimSpace(fh.String), c.Args().Get(0))
 							}
 						} else {
 							cli.ShowAppHelpAndExit(c, 0)

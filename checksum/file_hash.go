@@ -9,8 +9,10 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"hash"
+	"hash/adler32"
 	"hash/crc32"
 	"hash/crc64"
+	"hash/fnv"
 	"os"
 
 	"github.com/OneOfOne/xxhash"
@@ -21,13 +23,13 @@ import (
 
 // MD5sum returns MD5 checksum of filename
 // bytes:
-func MD5sum(filename string) (string, error) {
+func MD5sum(filename string, _ int, _ string) (string, error) {
 	return sum(md5.New(), filename)
 }
 
 // SHA1sum returns SHA-1 checksum of filename
 // bytes:
-func SHA1sum(filename string) (string, error) {
+func SHA1sum(filename string, _ int, _ string) (string, error) {
 	return sum(sha1.New(), filename)
 }
 
@@ -57,7 +59,7 @@ func CRC64sum(filename string, _ int, poly string) (string, error) {
 
 // SHA2sum returns SHA-2 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA2sum(filename string, bytes int) (string, error) {
+func SHA2sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -78,7 +80,7 @@ func SHA2sum(filename string, bytes int) (string, error) {
 
 // SHA3sum returns SHA-3 checksum of filename
 // bytes: 224, 256, 384, 512
-func SHA3sum(filename string, bytes int) (string, error) {
+func SHA3sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -99,7 +101,7 @@ func SHA3sum(filename string, bytes int) (string, error) {
 
 // BLAKE2Bsum returns BLAKE2b checksum of filename
 // bytes: 256, 384, 512
-func BLAKE2Bsum(filename string, bytes int) (string, error) {
+func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -118,7 +120,7 @@ func BLAKE2Bsum(filename string, bytes int) (string, error) {
 
 // BLAKE3sum returns BLAKE3 checksum of filename
 // bytes: 256, 384, 512
-func BLAKE3sum(filename string, bytes int) (string, error) {
+func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -137,7 +139,7 @@ func BLAKE3sum(filename string, bytes int) (string, error) {
 
 // XXHsum returns XXH(32/64) checksum of filenamePackage crc32 implements the 32-bit cyclic redundancy check, or CRC-32, checksum. See https://en.wikipedia.org/wiki/Cyclic_redundancy_check for information.
 // bytes: 32, 64
-func XXHsum(filename string, bytes int) (string, error) {
+func XXHsum(filename string, bytes int, _ string) (string, error) {
 	var h hash.Hash
 	switch bytes {
 	case 0:
@@ -150,6 +152,46 @@ func XXHsum(filename string, bytes int) (string, error) {
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
 	return sum(h, filename)
+}
+
+// FNVsum returns XXH checksum of content in reader
+// bytes: 32, 64, 128
+func FNVsum(filename string, bytes int, _ string) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = fnv.New32()
+	case 64:
+		h = fnv.New64()
+	case 128:
+		h = fnv.New128()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
+	return sum(h, filename)
+}
+
+// FNVasum returns XXH checksum of content in reader
+// bytes: 32, 64, 128
+func FNVasum(filename string, bytes int, _ string) (string, error) {
+	var h hash.Hash
+	switch bytes {
+	case 0:
+		h = fnv.New32a()
+	case 64:
+		h = fnv.New64a()
+	case 128:
+		h = fnv.New128a()
+	default:
+		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+	}
+	return sum(h, filename)
+}
+
+// Adler32sum returns XXH checksum of content in reader
+// bytes: 32
+func Adler32sum(filename string, _ int, _ string) (string, error) {
+	return sum(adler32.New(), filename)
 }
 
 // sum calculates the hash based on a provided hash provider

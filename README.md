@@ -48,12 +48,16 @@ func main() {
 
 ## Algorithms
 ### Hash functions
+#### CRC's
 ```
 crc32-IEEE
      -Koopman ('k')
      -Castagnoli ('c')
 crc64-ISO
      -ECMA ('e')
+```
+#### Cryptographic Hashes
+```
 md5
 sha1
 sha2-224
@@ -70,9 +74,26 @@ blake2b-256
 blake3-256
       -384
       -512
+```
+#### Fuzzy hashes
+```
+tlsh
+ssdeep
+sdhash
+```
+#### Other
+```
+adler32
+fnv-32
+   -32a
+   -64
+   -64a
+   -128
+   -128a
 xxhash-32
       -64
 ```
+
 
 ### KDFs
 ```
@@ -88,6 +109,10 @@ hkdf
 ## Defaults
 
 See `cself kdf -h`.
+
+## FAQ
+* What does `cself` mean?
+  * no clue
 
 # License
 
