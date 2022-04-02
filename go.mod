@@ -1,4 +1,4 @@
-module git.neveris.one/gryffyn/cself
+module git.gryffyn.io/gryffyn/cself
 
 go 1.14
 
