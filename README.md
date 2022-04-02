@@ -1,6 +1,6 @@
 # cself
-[![PkgGoDev](https://pkg.go.dev/badge/git.neveris.one/gryffyn/cself)](https://pkg.go.dev/git.neveris.one/gryffyn/cself)
-[![Build Status](https://ci.neveris.one/api/badges/gryffyn/cself/status.svg)](https://ci.neveris.one/gryffyn/cself)
+[![PkgGoDev](https://pkg.go.dev/badge/git.gryffyn.io/gryffyn/cself)](https://pkg.go.dev/git.gryffyn.io/gryffyn/cself)
+[![Build Status](https://ci.gryffyn.io/api/badges/gryffyn/cself/status.svg?ref=refs/heads/main)](https://ci.gryffyn.io/gryffyn/cself)
 
 Fork of [checksum](https://github.com/codingsince1985/checksum).
 
@@ -34,7 +34,7 @@ package main
 
 import (
 	"fmt"
-	"git.neveris.one/gryffyn/cself/checksum"
+	"git.gryffyn.io/gryffyn/cself/checksum"
 )
 
 func main() {
