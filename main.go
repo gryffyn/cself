@@ -13,9 +13,9 @@ import (
 	"reflect"
 	"strings"
 
-	"git.neveris.one/gryffyn/cself/checksum"
-	"git.neveris.one/gryffyn/cself/fuzz"
-	"git.neveris.one/gryffyn/cself/kdf"
+	"git.gryffyn.io/gryffyn/cself/checksum"
+	"git.gryffyn.io/gryffyn/cself/fuzz"
+	"git.gryffyn.io/gryffyn/cself/kdf"
 	gsk "github.com/gryffyn/go-scrypt-kdf"
 	"github.com/urfave/cli/v2"
 )

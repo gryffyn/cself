@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"git.neveris.one/gryffyn/cself/checksum"
+	"git.gryffyn.io/gryffyn/cself/checksum"
 )
 
 func TestSHA256sumReader(t *testing.T) {
