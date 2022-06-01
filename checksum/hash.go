@@ -240,7 +240,7 @@ func sumReader(hashAlgorithm hash.Hash, bits int, reader io.Reader) (string, err
 				return "", err
 			}
 		case io.EOF:
-			bytelen := fmt.Sprintf("%%%dX", bits/4)
+			bytelen := fmt.Sprintf("%%%dx", bits/4)
 			return fmt.Sprintf(bytelen, hashAlgorithm.Sum(nil)), nil
 		default:
 			return "", err
