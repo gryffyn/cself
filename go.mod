@@ -8,8 +8,8 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/eciavatta/sdhash v0.0.0-20210117153940-a7b55306eeff
 	github.com/glaslos/ssdeep v0.3.1
+	github.com/glaslos/tlsh v0.2.1-0.20190803090415-ef1954596284
 	github.com/gryffyn/go-scrypt-kdf v0.1.0
-	github.com/gryffyn/tlsh v0.3.1
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f
 	github.com/tredoe/osutil v1.0.6

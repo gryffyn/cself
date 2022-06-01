@@ -5,7 +5,7 @@ import (
 
 	"github.com/eciavatta/sdhash"
 	"github.com/glaslos/ssdeep"
-	"github.com/gryffyn/tlsh"
+	"github.com/glaslos/tlsh"
 )
 
 func SSDEEPsumReaderCompare(bytes []byte, h2 string) (int, error) {
@@ -19,7 +19,9 @@ func TLSHsumReaderCompare(bytes []byte, h2 string) (int, error) {
 	t2, err := tlsh.ParseStringToTlsh(h2)
 	if t1 != nil {
 		return t1.Diff(t2), err
-	} else { return 0, errors.New("failed to compare hash") }
+	} else {
+		return 0, errors.New("failed to compare hash")
+	}
 }
 
 func SDHASHsumReaderCompare(bytes []byte, h2 string) (int, error) {
@@ -27,7 +29,9 @@ func SDHASHsumReaderCompare(bytes []byte, h2 string) (int, error) {
 	var s1h sdhash.Sdbf
 	if s1 != nil {
 		s1h = s1.Compute()
-	} else { return 0, errors.New("failed to compare hash") }
+	} else {
+		return 0, errors.New("failed to compare hash")
+	}
 	s2h, err := sdhash.ParseSdbfFromString(h2)
 	return s1h.Compare(s2h), err
 }
@@ -37,4 +41,4 @@ func SDHASHsumReaderCompare(bytes []byte, h2 string) (int, error) {
 func sumCompare(f func([]byte, string)(int, error), bytes []byte, h2 string) (int, error) {
 	return f(bytes, h2)
 }
- */
+*/
