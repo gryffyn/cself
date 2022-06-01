@@ -7,61 +7,95 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"errors"
 	"fmt"
 	"hash"
 	"hash/adler32"
 	"hash/crc32"
 	"hash/crc64"
 	"hash/fnv"
+	"io"
 	"os"
+	"strings"
 
+	"git.gryffyn.io/gryffyn/go-chksum3"
 	"github.com/OneOfOne/xxhash"
+	"github.com/sigurn/crc8"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/sha3"
 	"lukechampine.com/blake3"
 )
 
 // MD5sum returns MD5 checksum of filename
-// bytes:
+// bits: 128
 func MD5sum(filename string, _ int, _ string) (string, error) {
-	return sum(md5.New(), filename)
+	return sum(md5.New(), 128, filename)
 }
 
 // SHA1sum returns SHA-1 checksum of filename
-// bytes:
+// bits: 160
 func SHA1sum(filename string, _ int, _ string) (string, error) {
-	return sum(sha1.New(), filename)
+	return sum(sha1.New(), 160, filename)
 }
 
-// CRC32sum returns CRC32 checksum of content in reader
-// bytes:
-func CRC32sum(filename string, _ int, poly string) (string, error) {
-	switch poly {
-	case "c":
-		return sum(crc32.New(crc32.MakeTable(crc32.Castagnoli)), filename)
-	case "k":
-		return sum(crc32.New(crc32.MakeTable(crc32.Koopman)), filename)
+func CRC8Sum(reader io.Reader, _ int, poly string) (string, error) {
+	m := map[string]crc8.Params{
+		"CDMA2000": crc8.CRC8_CDMA2000,
+		"DARC":     crc8.CRC8_DARC,
+		"DVB_S2":   crc8.CRC8_DVB_S2,
+		"EBU":      crc8.CRC8_EBU,
+		"I_CODE":   crc8.CRC8_I_CODE,
+		"ITU":      crc8.CRC8_ITU,
+		"MAXIM":    crc8.CRC8_MAXIM,
+		"ROHC":     crc8.CRC8_ROHC,
+		"WCDMA":    crc8.CRC8_WCDMA,
+	}
+	data, err := io.ReadAll(reader)
+	return string(crc8.Checksum(data, crc8.MakeTable(m[strings.ToUpper(poly)]))), err
+}
+
+// LESum returns 8 or 32 bit little-endian checksum of content in filename
+// bits: 32
+func LESum(filename string, bits int, _ string) (string, error) {
+	switch bits {
+	case 8:
+		return sum(chksum3.New8(), 8, filename)
+	case 32:
+		return sum(chksum3.New32(), 32, filename)
 	default:
-		return sum(crc32.NewIEEE(), filename)
+		return "", errors.New("invalid byte size: must be '8' or '32'")
 	}
 }
 
-// CRC64sum returns CRC64 checksum of content in reader
-// bytes:
+// CRC32sum returns CRC32 checksum of content in filename
+// bits: 32
+func CRC32sum(filename string, _ int, poly string) (string, error) {
+	switch poly {
+	case "c":
+		return sum(crc32.New(crc32.MakeTable(crc32.Castagnoli)), 32, filename)
+	case "k":
+		return sum(crc32.New(crc32.MakeTable(crc32.Koopman)), 32, filename)
+	default:
+		return sum(crc32.NewIEEE(), 32, filename)
+	}
+}
+
+// CRC64sum returns CRC64 checksum of content in filename
+// bits: 64
 func CRC64sum(filename string, _ int, poly string) (string, error) {
 	switch poly {
 	case "e":
-		return sum(crc64.New(crc64.MakeTable(crc64.ECMA)), filename)
+		return sum(crc64.New(crc64.MakeTable(crc64.ECMA)), 64, filename)
 	default:
-		return sum(crc64.New(crc64.MakeTable(crc64.ISO)), filename)
+		return sum(crc64.New(crc64.MakeTable(crc64.ISO)), 64, filename)
 	}
 }
 
 // SHA2sum returns SHA-2 checksum of filename
-// bytes: 224, 256, 384, 512
-func SHA2sum(filename string, bytes int, _ string) (string, error) {
+// bits: 224, 256, 384, 512
+func SHA2sum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = sha256.New()
 	case 224:
@@ -73,16 +107,16 @@ func SHA2sum(filename string, bytes int, _ string) (string, error) {
 	case 512:
 		h = sha512.New()
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // SHA3sum returns SHA-3 checksum of filename
-// bytes: 224, 256, 384, 512
-func SHA3sum(filename string, bytes int, _ string) (string, error) {
+// bits: 224, 256, 384, 512
+func SHA3sum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = sha3.New224()
 	case 224:
@@ -94,16 +128,16 @@ func SHA3sum(filename string, bytes int, _ string) (string, error) {
 	case 512:
 		h = sha3.New512()
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // BLAKE2Bsum returns BLAKE2b checksum of filename
-// bytes: 256, 384, 512
-func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
+// bits: 256, 384, 512
+func BLAKE2Bsum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h, _ = blake2b.New256(nil)
 	case 256:
@@ -113,16 +147,16 @@ func BLAKE2Bsum(filename string, bytes int, _ string) (string, error) {
 	case 512:
 		h, _ = blake2b.New512(nil)
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // BLAKE3sum returns BLAKE3 checksum of filename
-// bytes: 256, 384, 512
-func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
+// bits: 256, 384, 512
+func BLAKE3sum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = blake3.New(32, nil)
 	case 256:
@@ -132,16 +166,16 @@ func BLAKE3sum(filename string, bytes int, _ string) (string, error) {
 	case 512:
 		h = blake3.New(64, nil)
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
-// XXHsum returns XXH(32/64) checksum of filenamePackage crc32 implements the 32-bit cyclic redundancy check, or CRC-32, checksum. See https://en.wikipedia.org/wiki/Cyclic_redundancy_check for information.
-// bytes: 32, 64
-func XXHsum(filename string, bytes int, _ string) (string, error) {
+// XXHsum returns XXH(32/64) checksum of filename
+// bits: 32, 64
+func XXHsum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = xxhash.NewHash32()
 	case 32:
@@ -149,16 +183,16 @@ func XXHsum(filename string, bytes int, _ string) (string, error) {
 	case 64:
 		h = xxhash.NewHash64()
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // FNVsum returns XXH checksum of content in reader
-// bytes: 32, 64, 128
-func FNVsum(filename string, bytes int, _ string) (string, error) {
+// bits: 32, 64, 128
+func FNVsum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = fnv.New32()
 	case 64:
@@ -166,16 +200,16 @@ func FNVsum(filename string, bytes int, _ string) (string, error) {
 	case 128:
 		h = fnv.New128()
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // FNVasum returns XXH checksum of content in reader
-// bytes: 32, 64, 128
-func FNVasum(filename string, bytes int, _ string) (string, error) {
+// bits: 32, 64, 128
+func FNVasum(filename string, bits int, _ string) (string, error) {
 	var h hash.Hash
-	switch bytes {
+	switch bits {
 	case 0:
 		h = fnv.New32a()
 	case 64:
@@ -183,19 +217,19 @@ func FNVasum(filename string, bytes int, _ string) (string, error) {
 	case 128:
 		h = fnv.New128a()
 	default:
-		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
+		return "", fmt.Errorf("invalid number of bits: %d", bits)
 	}
-	return sum(h, filename)
+	return sum(h, bits, filename)
 }
 
 // Adler32sum returns XXH checksum of content in reader
-// bytes: 32
+// bits: 32
 func Adler32sum(filename string, _ int, _ string) (string, error) {
-	return sum(adler32.New(), filename)
+	return sum(adler32.New(), 32, filename)
 }
 
 // sum calculates the hash based on a provided hash provider
-func sum(hashAlgorithm hash.Hash, filename string) (string, error) {
+func sum(hashAlgorithm hash.Hash, bits int, filename string) (string, error) {
 	if info, err := os.Stat(filename); err != nil || info.IsDir() {
 		return "", err
 	}
@@ -206,5 +240,5 @@ func sum(hashAlgorithm hash.Hash, filename string) (string, error) {
 	}
 	defer func() { _ = file.Close() }()
 
-	return sumReader(hashAlgorithm, bufio.NewReader(file))
+	return sumReader(hashAlgorithm, bits, bufio.NewReader(file))
 }

@@ -55,12 +55,13 @@ func main() {
 		"sha3":    checksum.SHA3sum,
 		"blake2b": checksum.BLAKE2Bsum,
 		"blake3":  checksum.BLAKE3sum,
+		"le":      checksum.LESum,
 		"xxh":     checksum.XXHsum,
 		"crc32":   checksum.CRC32sum,
 		"crc64":   checksum.CRC64sum,
 		"fnv":     checksum.FNVsum,
 		"fnva":    checksum.FNVasum,
-		"adler32":   checksum.Adler32sum,
+		"adler32": checksum.Adler32sum,
 	}
 	hashesReader := map[string]interface{}{
 		"md5":     checksum.MD5sumReader,
@@ -69,12 +70,13 @@ func main() {
 		"sha3":    checksum.SHA3sumReader,
 		"blake2b": checksum.BLAKE2BsumReader,
 		"blake3":  checksum.BLAKE3sumReader,
+		"le":      checksum.LESumReader,
 		"xxh":     checksum.XXHsumReader,
 		"crc32":   checksum.CRC32Reader,
 		"crc64":   checksum.CRC64Reader,
 		"fnv":     checksum.FNVsumReader,
 		"fnva":    checksum.FNVasumReader,
-		"adler32":   checksum.Adler32sumReader,
+		"adler32": checksum.Adler32sumReader,
 	}
 	kdfs := map[string]func(reader io.Reader, params kdf.Params, format string) ([]byte, error){
 		"argon2i":  kdf.ARGON2I,
@@ -383,6 +385,8 @@ func main() {
 								} else {
 									fmt.Println(output)
 								}
+							} else {
+								log.Fatalln(err)
 							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")
@@ -397,6 +401,8 @@ func main() {
 								} else {
 									fmt.Println(output)
 								}
+							} else {
+								log.Fatalln(err)
 							}
 						} else {
 							fmt.Println("Hash function '" + hashfunc + "' not found.")

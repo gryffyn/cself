@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"errors"
 	"fmt"
 	"hash"
 	"hash/adler32"
@@ -12,8 +13,11 @@ import (
 	"hash/crc64"
 	"hash/fnv"
 	"io"
+	"strings"
 
+	"git.gryffyn.io/gryffyn/go-chksum3"
 	"github.com/OneOfOne/xxhash"
+	"github.com/sigurn/crc8"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/sha3"
 	"lukechampine.com/blake3"
@@ -22,28 +26,59 @@ import (
 const bufferSize int = 65536
 
 // MD5sumReader returns MD5 checksum of content in reader
-// bytes:
+// bytes: 128
 func MD5sumReader(reader io.Reader, _ int, _ string) (string, error) {
-	return sumReader(md5.New(), reader)
+	return sumReader(md5.New(), 128, reader)
 }
 
 // SHA1sumReader returns SHA-1 checksum of content in reader
-// bytes:
+// bytes: 160
 func SHA1sumReader(reader io.Reader, _ int, _ string) (string, error) {
-	return sumReader(sha1.New(), reader)
+	return sumReader(sha1.New(), 160, reader)
+}
+
+// LESumReader returns 8 or 32 bit little-endian checksum of content in reader
+// bits: 32
+func LESumReader(reader io.Reader, bytes int, _ string) (string, error) {
+	switch bytes {
+	case 8:
+		return sumReader(chksum3.New8(), 8, reader)
+	case 32:
+		return sumReader(chksum3.New32(), 32, reader)
+	default:
+		return "", errors.New("invalid byte size: must be '8' or '32'")
+	}
+}
+
+func CRC8Reader(reader io.Reader, _ int, poly string) (string, error) {
+	m := map[string]crc8.Params{
+		"CDMA2000": crc8.CRC8_CDMA2000,
+		"DARC":     crc8.CRC8_DARC,
+		"DVB_S2":   crc8.CRC8_DVB_S2,
+		"EBU":      crc8.CRC8_EBU,
+		"I_CODE":   crc8.CRC8_I_CODE,
+		"ITU":      crc8.CRC8_ITU,
+		"MAXIM":    crc8.CRC8_MAXIM,
+		"ROHC":     crc8.CRC8_ROHC,
+		"WCDMA":    crc8.CRC8_WCDMA,
+	}
+	data, err := io.ReadAll(reader)
+	return string(crc8.Checksum(data, crc8.MakeTable(m[strings.ToUpper(poly)]))), err
 }
 
 // CRC32Reader returns CRC32 checksum of content in reader
 // bytes:
 func CRC32Reader(reader io.Reader, _ int, poly string) (string, error) {
+	var tbl *crc32.Table
 	switch poly {
 	case "c":
-		return sumReader(crc32.New(crc32.MakeTable(crc32.Castagnoli)), reader)
+		tbl = crc32.MakeTable(crc32.Castagnoli)
 	case "k":
-		return sumReader(crc32.New(crc32.MakeTable(crc32.Koopman)), reader)
+		tbl = crc32.MakeTable(crc32.Koopman)
 	default:
-		return sumReader(crc32.NewIEEE(), reader)
+		return sumReader(crc32.NewIEEE(), 32, reader)
 	}
+	return sumReader(crc32.New(tbl), 32, reader)
 }
 
 // CRC64Reader returns CRC64 checksum of content in reader
@@ -51,9 +86,9 @@ func CRC32Reader(reader io.Reader, _ int, poly string) (string, error) {
 func CRC64Reader(reader io.Reader, _ int, poly string) (string, error) {
 	switch poly {
 	case "e":
-		return sumReader(crc64.New(crc64.MakeTable(crc64.ECMA)), reader)
+		return sumReader(crc64.New(crc64.MakeTable(crc64.ECMA)), 64, reader)
 	default:
-		return sumReader(crc64.New(crc64.MakeTable(crc64.ISO)), reader)
+		return sumReader(crc64.New(crc64.MakeTable(crc64.ISO)), 64, reader)
 	}
 }
 
@@ -75,7 +110,7 @@ func SHA2sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // SHA3sumReader returns SHA-3 checksum of content in reader
@@ -96,7 +131,7 @@ func SHA3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // BLAKE2BsumReader returns BLAKE2b checksum of content in reader
@@ -115,7 +150,7 @@ func BLAKE2BsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // BLAKE3sumReader returns BLAKE3 checksum of content in reader
@@ -134,7 +169,7 @@ func BLAKE3sumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // XXHsumReader returns XXH checksum of content in reader
@@ -151,7 +186,7 @@ func XXHsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // FNVsumReader returns XXH checksum of content in reader
@@ -168,7 +203,7 @@ func FNVsumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // FNVasumReader returns XXH checksum of content in reader
@@ -185,24 +220,28 @@ func FNVasumReader(reader io.Reader, bytes int, _ string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid number of bytes: %d", bytes)
 	}
-	return sumReader(h, reader)
+	return sumReader(h, bytes, reader)
 }
 
 // Adler32sumReader returns XXH checksum of content in reader
 // bytes: 32
 func Adler32sumReader(reader io.Reader, _ int, _ string) (string, error) {
-	return sumReader(adler32.New(), reader)
+	return sumReader(adler32.New(), 32, reader)
 }
 
 // sumReader calculates the hash based on a provided hash provider
-func sumReader(hashAlgorithm hash.Hash, reader io.Reader) (string, error) {
+func sumReader(hashAlgorithm hash.Hash, bits int, reader io.Reader) (string, error) {
 	buf := make([]byte, bufferSize)
 	for {
 		switch n, err := reader.Read(buf); err {
 		case nil:
-			hashAlgorithm.Write(buf[:n])
+			_, err := hashAlgorithm.Write(buf[:n])
+			if err != nil {
+				return "", err
+			}
 		case io.EOF:
-			return fmt.Sprintf("%x", hashAlgorithm.Sum(nil)), nil
+			bytelen := fmt.Sprintf("%%%dX", bits/4)
+			return fmt.Sprintf(bytelen, hashAlgorithm.Sum(nil)), nil
 		default:
 			return "", err
 		}
