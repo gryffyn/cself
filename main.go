@@ -10,7 +10,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 
 	"git.gryffyn.io/gryffyn/cself/checksum"
@@ -19,33 +18,6 @@ import (
 	gsk "github.com/gryffyn/go-scrypt-kdf"
 	"github.com/urfave/cli/v2"
 )
-
-func dcS(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
-	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn + "sum"))
-	var inputs []reflect.Value
-	for _, v := range args {
-		inputs = append(inputs, reflect.ValueOf(v))
-	}
-	return method.Call(inputs)
-}
-
-func dcSR(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
-	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn + "sumReader"))
-	var inputs []reflect.Value
-	for _, v := range args {
-		inputs = append(inputs, reflect.ValueOf(v))
-	}
-	return method.Call(inputs)
-}
-
-func dcK(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
-	method := reflect.ValueOf(obj).MethodByName(strings.ToTitle(fn))
-	var inputs []reflect.Value
-	for _, v := range args {
-		inputs = append(inputs, reflect.ValueOf(v))
-	}
-	return method.Call(inputs)
-}
 
 func main() {
 	hashes := map[string]interface{}{
@@ -160,6 +132,15 @@ func main() {
 						Usage:    "Byte length for hash function ex. 256",
 						Required: false,
 					},
+					// TODO: multihash
+					/*
+						&cli.BoolFlag{
+							Name:     "multihash",
+							Aliases:  []string{"m"},
+							Usage:    "Outputs in multihash format",
+							Required: false,
+						},
+					*/
 				},
 				Action: func(c *cli.Context) error {
 					var err error
@@ -213,7 +194,22 @@ func main() {
 						Usage:    "hash input to compare to",
 						Required: false,
 					},
-					// TODO: add input-filename and allow comparing two files
+					&cli.IntFlag{
+						Name:     "threshold",
+						Aliases:  []string{"t"},
+						Usage:    "match threshold",
+						Value:    0,
+						Required: false,
+					},
+					// TODO: file to file comparison
+					/*
+						&cli.StringFlag{
+							Name:     "compare-file",
+							Aliases:  []string{"c"},
+							Usage:    "file to compare input to",
+							Required: false,
+						},
+					*/
 				},
 				Action: func(c *cli.Context) error {
 					var err error
@@ -229,18 +225,26 @@ func main() {
 							log.Fatalln(err)
 						}
 						if compare {
-							fmt.Printf("Input diff is %d\n", fh.Diff)
+							if fh.Diff > c.Int("threshold") {
+								fmt.Printf("MATCH (%d)  -\n", fh.Diff)
+							} else {
+								fmt.Printf("NO MATCH")
+							}
 						} else {
 							fmt.Printf("%s  -\n", strings.TrimSpace(fh.String))
 						}
 					} else {
 						if c.Args().Get(0) != "" {
-							fh, err := fuzz.Sum(hashfunc, c.Args().Get(0), compare, c.String("input-hash"))
+							fh, err := fuzz.Sum(hashfunc, c.Args().First(), compare, c.String("input-hash"))
 							if err != nil {
 								log.Fatalln(err)
 							}
 							if compare {
-								fmt.Printf("Input diff is %d\n", fh.Diff)
+								if fh.Diff > c.Int("threshold") {
+									fmt.Printf("MATCH (%d)  %s\n", fh.Diff, c.Args().First())
+								} else {
+									fmt.Printf("NO MATCH")
+								}
 							} else {
 								fmt.Printf("%s  %s\n", strings.TrimSpace(fh.String), c.Args().Get(0))
 							}

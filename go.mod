@@ -14,7 +14,7 @@ require (
 	github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f
 	github.com/tredoe/osutil v1.0.6
 	github.com/urfave/cli/v2 v2.3.0
-	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab // indirect
 	lukechampine.com/blake3 v1.1.7
 )
