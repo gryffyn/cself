@@ -12,7 +12,7 @@ require (
 	github.com/gryffyn/go-scrypt-kdf v0.1.0
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f
-	github.com/tredoe/osutil v1.0.6
+	github.com/tredoe/osutil v1.5.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab // indirect
